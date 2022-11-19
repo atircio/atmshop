@@ -9,7 +9,8 @@ import javax.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.EmptyResultDataAccessException;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,7 +21,7 @@ import com.atm.dscatalog.services.exceptions.DataBaseException;
 import com.atm.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @Service
-public class CategoryService {
+public  class CategoryService {
 
 	@Autowired /*
 				 * Essa annotation garante q a variavel seja uma dependencia de
@@ -36,6 +37,13 @@ public class CategoryService {
 		List<Category> list = repository.findAll();
 
 		List<CategoryDTO> listDto = list.stream().map(x -> new CategoryDTO(x)).collect(Collectors.toList());
+		return listDto;
+	}
+
+	public Page<CategoryDTO> findAllPaged(PageRequest pageRequest) {
+		Page<Category> list = repository.findAll(pageRequest);
+
+		Page<CategoryDTO> listDto = list.map(x -> new CategoryDTO(x));
 		return listDto;
 	}
 
@@ -72,15 +80,13 @@ public class CategoryService {
 	public void delete(Long id) {
 		try {
 			repository.deleteById(id);
-			
-		}
-		catch(EmptyResultDataAccessException e) {
-			throw new ResourceNotFoundException("ID not found: "+id);
-		}
-		catch(DataIntegrityViolationException e) {
+
+		} catch (EmptyResultDataAccessException e) {
+			throw new ResourceNotFoundException("ID not found: " + id);
+		} catch (DataIntegrityViolationException e) {
 			throw new DataBaseException("Integrity violation");
 		}
-		
+
 	}
 
 }
