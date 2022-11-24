@@ -1,8 +1,10 @@
 package com.atm.dscatalog.entities;
 
 import java.io.Serializable;
+import java.time.Instant;
 import java.util.Objects;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -19,6 +21,12 @@ public class Category implements Serializable {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	private String name;
+	
+	@Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+	private Instant createAt;
+	
+	@Column(columnDefinition = "TIMESTAMP WITHOUT TIME ZONE")
+	private Instant updateAt;
 
 	public Category() {
 
