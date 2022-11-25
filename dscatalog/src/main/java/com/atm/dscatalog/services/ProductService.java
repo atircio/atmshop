@@ -14,19 +14,24 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.atm.dscatalog.dto.CategoryDTO;
 import com.atm.dscatalog.dto.ProductDTO;
+import com.atm.dscatalog.entities.Category;
 import com.atm.dscatalog.entities.Product;
+import com.atm.dscatalog.repositories.CategoryRepository;
 import com.atm.dscatalog.repositories.ProductRepository;
 import com.atm.dscatalog.services.exceptions.DataBaseException;
 import com.atm.dscatalog.services.exceptions.ResourceNotFoundException;
 
 @Service
-public  class ProductService {
+public class ProductService {
 
 	@Autowired
 	private ProductRepository repository;
+	@Autowired
+	private CategoryRepository categoryRepository;
 
-	@Transactional(readOnly = true) 
+	@Transactional(readOnly = true)
 	public List<ProductDTO> findAll() {
 		List<Product> list = repository.findAll();
 
@@ -52,7 +57,7 @@ public  class ProductService {
 	public ProductDTO insert(ProductDTO dto) {
 
 		Product entity = new Product();
-		//entity.setName(dto.getName());
+		copyDtoToEntity(dto, entity);
 		entity = repository.save(entity);
 		return new ProductDTO(entity);
 	}
@@ -62,7 +67,7 @@ public  class ProductService {
 		Optional<Product> obj = repository.findById(id);
 		try {
 			Product entity = obj.orElseThrow();
-			//entity.setName(dto.getName());
+			copyDtoToEntity(dto, entity);
 			entity = repository.save(entity);
 			return new ProductDTO(entity);
 		} catch (EntityNotFoundException e) {
@@ -81,6 +86,21 @@ public  class ProductService {
 			throw new DataBaseException("Integrity violation");
 		}
 
+	}
+
+	private void copyDtoToEntity(ProductDTO dto, Product entity) {
+		entity.setName(dto.getName());
+		entity.setDate(dto.getDate());
+		entity.setDescription(dto.getDescription());
+		entity.setImgUrl(dto.getImgUrl());
+		entity.setPrice(dto.getPrice());
+
+		entity.getCategories().clear();
+		for (CategoryDTO catDto : dto.getCategories()) {
+			Optional<Category> Optionalcategory = categoryRepository.findById(catDto.getId());
+			Category category = Optionalcategory.orElseThrow(() -> new ResourceNotFoundException("Entity not found"));
+			entity.getCategories().add(category);
+		}
 	}
 
 }
